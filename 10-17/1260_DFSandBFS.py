@@ -10,55 +10,46 @@ M: 간선 개수
 V: 시작점
 """
 
-def dfs(V):
-    s = V
+def dfs(c):
+    for w in adjL[c]: # 인접한 곳에 대해서
+        if visited[w] == 0:
+            result_dfs.append(w) # path 추가
+            visited[w] = 1 # 방문표시
+            dfs(w) # 돌아올 필요 없이 다 방문만 하면 됨
 
-    for w in adjL[s]:
-        if visited[w] == 1: continue
-        path1.append(w)
-        visited[w] = 1
-        dfs(w)
-        visited[w] = 0
-        path1.pop()
-
-    return path1
-
-
-def bfs(V):
+def bfs(s):
     q = []
-    q.append(V)
-    visited[V] = 1
-    path = [V]
+    q.append(s)
+    visited[s] = 1
+    result_bfs.append(s)
 
     while q:
-        s = q.pop(0)
+        s = q.pop(0) # 현재 위치 반환
+        for w in adjL[s]: # 접점이 있는 곳에서
+            if visited[w] == 0: # 안 간 곳
+                visited[w] = 1 # 방문
+                q.append(w) # 인큐
+                result_bfs.append(w)
 
-        for w in adjL[s]:
-            if visited[w] == 0:
-                visited[w] = 1
-                q.append(w)
-                path.append(w)
-
-    return path
 
 adjL = [[] for _ in range(N+1)]
-Lines = [list(map(int, input().split())) for _ in range(M)]
-
-for i in range(M):
-    a = Lines[i][0]
-    b = Lines[i][1]
+for _ in range(M):
+    a, b = map(int, input().split())
     adjL[a].append(b)
     adjL[b].append(a)
 
-print(adjL)
+for i in range(1, N+1): # 순서대로 방문하기 위해서 오름차순 정렬
+    adjL[i].sort()
+
 
 visited = [0]*(N+1)
+result_dfs = [V]
 visited[V] = 1
-path1 = [V]
-path1 = dfs(V)
+dfs(V)
 
 visited = [0]*(N+1)
-path2 = bfs(V)
+result_bfs = []
+bfs(V)
 
-print(*path1)
-print(*path2)
+print(*result_dfs)
+print(*result_bfs)
