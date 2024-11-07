@@ -2,15 +2,22 @@ from collections import deque
 from itertools import combinations
 # 유권자의 수 차이가 최소
 
-def find_min(s): # s: 시작 노드
-    visited = [0]*4
-    q=deque()
-    q.append(s)
-    visited[s] = 0
-    sec_A = [] # A 지역구
-    while q:
-        w = q.popleft()
-
+def is_connected(group, adjArr):
+    if not group: # group에 아무것도 없으면
+        return False
+    else: # 그룹이 있으면
+        visited = [0] * N
+        q = deque()
+        # 어쨌든 다 연결돼야 하니까 하나부터 시작해서 연결시키면 됨
+        q.append(group[0])
+        visited[group[0]] = 1
+        while q:
+            w = q.popleft()
+            for v in range(N): # 인접한 아이들에 대해 순회
+                if adjArr[w][v]==1 and v in group and visited[v]==0:
+                    visited[v] = 1
+                    q.append(v)
+        return len(group) == sum(visited)
 
 # 마을의 수
 T = int(input())
@@ -20,15 +27,18 @@ for tc in range(1,T+1):
     adjArr = [list(map(int, input().split())) for _ in range(N)]
     # 마을별 유권자수
     P = list(map(int, input().split()))
-    print(adjArr)
     # bfs-> dfs
-    min_v = 160
-    for n in range(4):
+    min_v = float('inf')
+    for n in range(1, N // 2 + 1):
+        # 중복을 허용하는 순서대로 a를 넣기(1~n개)
         for group_a in combinations(villages,n):
+            # b는 그 나머지
             group_b = [v for v in villages if v not in group_a]
-
+            # 두 그룹의 연결을 확인하기
             if is_connected(group_a, adjArr) and is_connected(group_b, adjArr):
-                voters_a = sum(v)
-        result = find_min(n)
-        min_v = min(min_v,result)
+                # 다 연결됐으면 합산
+                voters_a = sum(P[v] for v in group_a)
+                voters_b = sum(P[v] for v in group_b)
+                voters_diff = abs(voters_b - voters_a)
+                min_v = min(min_v,voters_diff)
     print(f'#{tc} {min_v}')
