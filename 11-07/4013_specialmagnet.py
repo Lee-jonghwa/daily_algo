@@ -1,5 +1,8 @@
 import sys
 sys.stdin = open('4013_input.txt','r')
+
+# 문제 이해를 잘못함... 연계돼서 톱니가 도는 게 아닌, 한 지점에서 모든 점이 돌아가는 것임 좀 더 쉽게 풀 수 있었을텐데,,,
+"""
 # K 번 자석을 회전시킨 후 획득하는 점수의 총 합
 # 하나의 자석이 1 칸 회전될 때, 서로 붙어 있는 날의 자성과 다를 경우에만 반대 방향으로 1 칸 회전
 N=0
@@ -7,98 +10,51 @@ S=1
 t_right = 1
 t_left = -1
 
-def next_turn(now, bef, move_dir,mag_info):
 
-    if move_dir == t_right: # 시계면
-        for i in range(8):
-            mag_info[bef][i] = mag_info[bef][(i - 1 + 8) % 8] # 지나간 거 이동
-        # 모든 날 하나 오른쪽 이동
-        if now < 4: # 아직 갈 곳 있으면
-            next = now + 1
-            next_dir = t_left
-            next_turn(next, now, next_dir, mag_info)
-    elif move_dir==t_left: # 반시계면
-        # 시계로 한 칸씩 이동
-        for i in range(8):
-            mag_info[mag_num][i] = mag_info[mag_num][(i - 1 + 8) % 8]
-            if now < 3: # 아직 갈 곳 있으면
-                next = now + 1
-                next_dir = t_right
-                next_turn(next, now, next_dir, mag_info)
-    else: # 왼쪽에 있으면
-        # 배열을 벗어나거나 이전 것의 6과 지금 것의 2를 비교
-        if now < 0: return
-        if mag_info[now][2] == mag_info[bef][6]: # 같으면
-            return # 종료
-        else: # 다르면
-            if move_dir == t_right:  # 시계면
-                # 반시계로 한 칸씩 이동
-                for i in range(8):
-                    mag_info[mag_num][i] = mag_info[mag_num][(i + 1) % 8]
-                    if now >= 1 :  # 아직 갈 곳 있으면
-                        next = now - 1
-                        next_dir = t_left
-                        next_turn(next, now, next_dir, mag_info)
-            elif move_dir == t_left:  # 반시계면
-                # 시계로 한 칸씩 이동
-                for i in range(8):
-                    mag_info[mag_num][i] = mag_info[mag_num][(i - 1 + 8) % 8]
-                    if now >= 1 :  # 아직 갈 곳 있으면
-                        next = now - 1
-                        next_dir = t_right
-                        next_turn(next, now, next_dir, mag_info)
-    return
-    # if move_dir == t_left: # 시계방향 이동하면
-    #     # 모든 날 하나 왼쪽으로 이동
-    #     for i in range(8):
-    #         new_mag[mag_num][i] = mag_info[mag_num][(i+1)%8]
-    #     # 주위의 체인과 비교하기
-    #     next_left = mag_num - 1
-    #     next_right = mag_num + 1
-    #     if next_left >=0:
-    #         next_turn(next_left,mag_num,move_dir,new_mag)
-    #     elif next_right < 4:
-    #         next_turn(next_right,mag_num,move_dir, new_mag)
+def turn(now,bef,move_dir,mag_info, visited): # 변경
+    if now < 0 or now >= len(mag_info) or bef < 0 or bef >= len(mag_info) or visited[now]: return # 배열을 벗어나면 정지
+
+    # 현재위치 반환
+    visited[now] = 1
+    # 각 방향에 대해 같은 경우 -> 변경 필요 없음
+    if (now > bef and mag_info[now][6] == mag_info[bef][2])\
+            or (now < bef and mag_info[now][2] == mag_info[bef][6]): return
+
+    next_right = now + 1
+    next_left = now - 1
 
 
-def turn(now,bef,move_dir,mag_info): # 변경
-    if now >= 4 or now <0: return # 배열을 벗어나면 정지
-    if now > bef and mag_info[now][6] == mag_info[bef][2]: return # 오른쪽에 있고, 비교했을 때 같으면
-    if now < bef and mag_info[now][2] == mag_info[bef][6]: return # 오른쪽에 있고, 비교했을 때 다르면
-    if now == bef: # 시작이면
-        next_left = mag_num - 1
-        next_right = mag_num + 1
-        if 4 > next_right >= 0:
+    # 변경
+    move_row = mag_info[now][:]  # 현재 이동할 열 저장
 
-        elif 4 > next_left >= 0:
-        pass
-    elif now > bef: # 오른쪽이면
-        if mag_info[now][6] == mag_info[bef][2]: # 같으면
-            pass
-    elif now < bef: # 왼쪽이면
-        if mag_info[now][2] == mag_info[bef][6]: # 같으면
-            pass
-        move_row = mag_info[mag_num][:] # 현재 이동할 열 저장 및 바꾸기
-        if move_dir == t_right:  # 시계면
-            # 시계로 한 칸씩 이동
-            for i in range(8):
-                move_row[i] = mag_info[mag_num][(i - 1 + 8) % 8]
-        else:
-            # 반시계로 한 칸씩 이동
-            for i in range(8):
-                move_row[i] = mag_info[mag_num][(i + 1) % 8]
-    # 양옆으로 나가기
-    next_left = mag_num - 1
-    next_right = mag_num + 1
-    next_turn(next_left,mag_num,move_dir,mag_info)
-    next_turn(next_right,mag_num,move_dir, mag_info)
-    return
+    is_go_right = False
+    is_go_left = False
+    # 다음을 변경할 지 말지를 확인해야 함
+    if now>=1 and mag_info[now][6] != mag_info[now-1][2]:
+        is_go_left = True
+    elif now<3 and mag_info[now][2] != mag_info[now+1][6]:
+        is_go_right = True
 
-def score(row):
-    if mag_info[row][0] == N:
-        return 0
+
+    if move_dir == t_right:
+        move_row = [move_row[(i-1+8) % 8] for i in range(8)]
     else:
-        return 1*(2**(row))
+        move_row = [move_row[(i+1) % 8] for i in range(8)]
+    mag_info[now] = move_row # 바꿔끼우기
+
+    # 양옆으로 가기
+    if is_go_left:
+        turn(now-1, mag_num, move_dir, mag_info, visited)
+    elif is_go_right:
+        turn(now+1, mag_num, move_dir, mag_info, visited)
+    return
+
+def score(mag_info):
+    result = 0
+    for i in range(4):
+        if mag_info[i][0] == S:
+            result += 1 * (2 ** i)
+    return result
 
 T = int(input())
 
@@ -120,8 +76,50 @@ for tc in range(1,T+1):
     # 이전 체인의 2와 다음 체인의 6을 비교하는 방식
     for mag_num, move_dir in move_mag:
         visited = [0] * 4
-        visited[mag_num] = 1
-        turn(mag_num-1,mag_num-1,move_dir,mag_info)
-    result = 0
-    for i in range(4):
-        result += score(i)
+        # 처음은 같음으로 해서 연결
+        turn(mag_num-1,mag_num-1,move_dir,mag_info, visited)
+
+    result = score(mag_info)
+    print(f'#{tc} {result}')
+    
+    """
+
+# 옥토푸수 박사님 풀이
+T = int(input())
+N = 4 # 자석 개수
+
+# 자석은 총 4개
+for tc in range(1,T+1):
+    # 회전 횟수
+    K = int(input())
+    arr = [[0]*8] + [list(map(int, input().split())) for _ in range(N)]
+    top = [0] * (N+1)
+    for _ in range(K): # K번 idx, dr 입력받음(회전)
+        idx, dr = map(int, input().split())
+        # [1] idx 톱니를 회전
+        tlst = [(idx, 0)]
+        # [2] 우측방향 처리(같은 극성 나오면 탈출)
+        for i in range(idx+1,N+1):
+            # 왼쪽 3시 극성 != 오른쪽 9시 극성 -> 회전 후보 추가
+            if arr[i-1][(top[i-1]+2)%8] != arr[i][(top[i]+6)%8]:
+                tlst.append((i, (i-idx)%2))
+            else:       # 같은 극성이면 더이상 전달 안 됨
+                break
+        # [3] 좌측방향 처리
+        for i in range(idx-1,0,-1):
+            # 왼쪽 3시 극성 != 오른쪽 9시 극성 -> 회전 후보 추가
+            if arr[i][(top[i]+2)%8] != arr[i+1][(top[i+1]+6)%8]:
+                tlst.append((i, (idx-i)%2))
+            else:       # 같은 극성이면 더이상 전달 안 됨
+                break
+        # [4] 실제 회전 처리 (시계방향 -> top -1)
+        for i, rot in tlst:
+            if rot == 0: # idx 톱니의 dr과 같은 방향
+                top[i] = (top[i]-dr +8)%8
+            else:
+                top[i] = (top[i]+dr+8)%8
+    ans = 0
+    tbl = [0,1,2,4,8]
+    for i in range(1, N+1):
+        ans += arr[i][top[i]]*tbl[i]
+    print(f'{tc} {ans}')
